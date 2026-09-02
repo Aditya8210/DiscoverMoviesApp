@@ -10,3 +10,6 @@ data class DetailsRoute(val movieId: Int)
 
 @Serializable
 object WatchlistRoute
+
+@Serializable
+object SettingsRoute

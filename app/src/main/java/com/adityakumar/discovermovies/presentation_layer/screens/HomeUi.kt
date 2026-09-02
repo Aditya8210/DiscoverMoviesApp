@@ -39,36 +39,38 @@ fun HomeUi(
     val movieState by viewModel.mState.collectAsStateWithLifecycle()
     var query by remember { mutableStateOf("") }
 
-    Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = { Text("Discover Movies", fontWeight = FontWeight.Bold) },
-                navigationIcon = {
-                    IconButton(onClick = { /* TODO */ }) {
-                        Icon(Icons.Default.Menu, contentDescription = "Menu")
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { /* TODO */ }) {
-                        Icon(Icons.Default.Search, contentDescription = "Search")
-                    }
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color(0xFF0F1113),
-                    titleContentColor = Color.White,
-                    navigationIconContentColor = Color.White,
-                    actionIconContentColor = Color.White
-                )
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFF0F1113))
+    ) {
+        // --- 1. Custom Top Bar (CenterAlignedTopAppBar) ---
+        CenterAlignedTopAppBar(
+            title = { Text("Discover Movies", fontWeight = FontWeight.Bold) },
+            navigationIcon = {
+                IconButton(onClick = { /* TODO */ }) {
+                    Icon(Icons.Default.Menu, contentDescription = "Menu")
+                }
+            },
+            actions = {
+                IconButton(onClick = { /* TODO */ }) {
+                    Icon(Icons.Default.Search, contentDescription = "Search")
+                }
+            },
+            colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                containerColor = Color(0xFF0F1113),
+                titleContentColor = Color.White,
+                navigationIconContentColor = Color.White,
+                actionIconContentColor = Color.White
             )
-        },
-        containerColor = Color(0xFF0F1113)
-    ) { innerPadding ->
+        )
+
         Column(
             modifier = Modifier
-                .padding(innerPadding)
                 .fillMaxSize()
                 .padding(horizontal = 16.dp)
         ) {
+            // --- 2. Search Bar with Filter ---
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
@@ -110,6 +112,7 @@ fun HomeUi(
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            // --- 3. Content Area ---
             Box(modifier = Modifier.fillMaxSize()) {
                 if (movieState.loading) {
                     CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = Color.Magenta)

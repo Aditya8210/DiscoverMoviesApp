@@ -7,7 +7,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Share
@@ -17,7 +18,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
@@ -27,6 +27,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.adityakumar.discovermovies.presentation_layer.viewModel.DetailsViewModel
+import java.util.Locale
+import androidx.compose.ui.platform.LocalLocale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,6 +37,7 @@ fun DetailsUi(
     viewModel: DetailsViewModel = hiltViewModel()
 ) {
     val state by viewModel.detailsState.collectAsStateWithLifecycle()
+    val isInWatchlist by viewModel.isInWatchlist.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
@@ -42,7 +45,7 @@ fun DetailsUi(
                 title = { Text("Movie Details", color = Color.White) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
                     }
                 },
                 actions = {
@@ -84,14 +87,18 @@ fun DetailsUi(
                         
                         // Floating Action Button for Watchlist
                         IconButton(
-                            onClick = { /* TODO */ },
+                            onClick = { viewModel.toggleWatchlist() },
                             modifier = Modifier
                                 .align(Alignment.BottomEnd)
                                 .padding(16.dp)
                                 .size(56.dp)
-                                .background(Color(0xFF673AB7), CircleShape)
+                                .background(if (isInWatchlist) Color.White else Color(0xFF673AB7), CircleShape)
                         ) {
-                            Icon(Icons.Default.BookmarkBorder, contentDescription = null, tint = Color.White)
+                            Icon(
+                                imageVector = if (isInWatchlist) Icons.Default.Bookmark else Icons.Default.BookmarkBorder, 
+                                contentDescription = null, 
+                                tint = if (isInWatchlist) Color.Black else Color.White
+                            )
                         }
                     }
 
@@ -111,7 +118,7 @@ fun DetailsUi(
                             Text(text = "${movie.runtime ?: 0}m", color = Color.Gray)
                             Text(text = "  •  ", color = Color.Gray)
                             Icon(Icons.Default.Star, null, tint = Color(0xFFFFC107), modifier = Modifier.size(16.dp))
-                            Text(text = " ${String.format("%.1f", movie.voteAverage ?: 0.0)}/10", color = Color.White)
+                            Text(text = String.format(LocalLocale.current.platformLocale, " %.1f/10", movie.voteAverage ?: 0.0), color = Color.White)
                         }
 
                         Spacer(modifier = Modifier.height(16.dp))
@@ -146,14 +153,19 @@ fun DetailsUi(
                         Spacer(modifier = Modifier.height(32.dp))
                         
                         Button(
-                            onClick = { /* TODO */ },
+                            onClick = { viewModel.toggleWatchlist() },
                             modifier = Modifier.fillMaxWidth().height(56.dp),
                             shape = RoundedCornerShape(16.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF673AB7))
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (isInWatchlist) Color.Gray else Color(0xFF673AB7)
+                            )
                         ) {
-                            Icon(Icons.Default.BookmarkBorder, contentDescription = null)
+                            Icon(
+                                imageVector = if (isInWatchlist) Icons.Default.Bookmark else Icons.Default.BookmarkBorder, 
+                                contentDescription = null
+                            )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Add to Watchlist")
+                            Text(if (isInWatchlist) "In Watchlist" else "Add to Watchlist")
                         }
                     }
                 }
