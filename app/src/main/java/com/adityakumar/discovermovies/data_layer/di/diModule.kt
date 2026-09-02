@@ -1,5 +1,9 @@
 package com.adityakumar.discovermovies.data_layer.di
 
+import android.content.Context
+import androidx.room.Room
+import com.adityakumar.discovermovies.data_layer.local.Dao.WatchListDao
+import com.adityakumar.discovermovies.data_layer.local.DbBase.MovieDatabase
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -10,6 +14,7 @@ import com.adityakumar.discovermovies.data_layer.remote.api.TmdbApiServices
 import com.adityakumar.discovermovies.data_layer.repositoryImpl.repoImple
 import com.adityakumar.discovermovies.domain_layer.repository.MovieRepository
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
+import dagger.hilt.android.qualifiers.ApplicationContext
 
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
@@ -21,6 +26,31 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object DiModule {
+
+    // 1. Database ka instance banane ke liye
+    @Provides
+    @Singleton
+    fun provideDatabase(@ApplicationContext context: Context): MovieDatabase {
+        return Room.databaseBuilder(
+            context,
+            MovieDatabase::class.java,
+            "movie_db" // Aapki database file ka naam
+        ).build()
+    }
+
+
+    // 2. DAO ka instance dene ke liye (taaki hum isse repo mein inject kar sakein)
+    @Provides
+    @Singleton
+    fun provideWatchListDao(database: MovieDatabase): WatchListDao {
+        return database.watchListDao()
+    }
+
+
+
+
+
+    // ~~~~Networking and Retrofit setup
 
     @Provides
     @Singleton
@@ -66,6 +96,11 @@ object DiModule {
     }
 }
 
+
+
+
+//  ~~binding repo interface and repo implementation
+
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class RepositoryModule {
@@ -75,4 +110,5 @@ abstract class RepositoryModule {
         movieRepositoryImpl: repoImple
     ): MovieRepository
 }
+
 
