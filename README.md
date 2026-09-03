@@ -42,9 +42,7 @@ A modern, feature-rich Android application built with **Jetpack Compose** that a
 To run this project locally on your machine, follow these steps:
 
 1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/your-username/DiscoverMovies.git
-   ```
+  
 
 2. **Open in Android Studio:**
    * Launch Android Studio and select **Open**.
