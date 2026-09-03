@@ -9,8 +9,8 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FilterList
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
@@ -18,8 +18,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -38,30 +41,38 @@ fun HomeUi(
 ) {
     val movieState by viewModel.mState.collectAsStateWithLifecycle()
     var query by remember { mutableStateOf("") }
+    val focusManager = LocalFocusManager.current
+
+    // Rich & Premium Dark Background
+    val backgroundColor = Color(0xFF121620)
+    val surfaceColor = Color(0xFF1E232E)
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF0F1113))
+            .background(backgroundColor)
     ) {
-        // --- 1. Custom Top Bar (CenterAlignedTopAppBar) ---
+        // --- Clean Top Bar (Only Title) ---
         CenterAlignedTopAppBar(
-            title = { Text("Discover Movies", fontWeight = FontWeight.Bold) },
-            navigationIcon = {
-                IconButton(onClick = { /* TODO */ }) {
-                    Icon(Icons.Default.Menu, contentDescription = "Menu")
-                }
-            },
-            actions = {
-                IconButton(onClick = { /* TODO */ }) {
-                    Icon(Icons.Default.Search, contentDescription = "Search")
-                }
+            title = { 
+                Text(
+                    text = "Discover Movies",
+                    style = TextStyle(
+                        brush = Brush.linearGradient(
+                            colors = listOf(
+                                Color(0xFF0AF3D4),
+                                Color(0xFFE0166B),
+                                Color(0xFF76E74E),
+                                Color(0xFF4168E5)
+                            )
+                        )
+                    ),
+                    fontSize = 32.sp,
+                    fontWeight = FontWeight.Bold
+                )
             },
             colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                containerColor = Color(0xFF0F1113),
-                titleContentColor = Color.White,
-                navigationIconContentColor = Color.White,
-                actionIconContentColor = Color.White
+                containerColor = backgroundColor
             )
         )
 
@@ -70,7 +81,7 @@ fun HomeUi(
                 .fillMaxSize()
                 .padding(horizontal = 16.dp)
         ) {
-            // --- 2. Search Bar with Filter ---
+            // --- Search Bar with Filter and Clear Button ---
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
@@ -83,13 +94,24 @@ fun HomeUi(
                     },
                     modifier = Modifier
                         .weight(1f)
-                        .height(56.dp)
+                        .height(54.dp)
                         .clip(RoundedCornerShape(16.dp)),
-                    placeholder = { Text("Search for movies...", color = Color.Gray) },
-                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color.Gray) },
+                    placeholder = { Text("Search for movies...", color = Color.LightGray, fontSize = 14.sp) },
+                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color.LightGray) },
+                    trailingIcon = {
+                        if (query.isNotEmpty()) {
+                            IconButton(onClick = {
+                                query = ""
+                                viewModel.searchMovies("")
+                                focusManager.clearFocus() // Keyboard aur Cursor hide karne ke liye
+                            }) {
+                                Icon(Icons.Default.Close, contentDescription = "Clear", tint = Color.LightGray)
+                            }
+                        }
+                    },
                     colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color(0xFF1C1F22),
-                        unfocusedContainerColor = Color(0xFF1C1F22),
+                        focusedContainerColor = surfaceColor,
+                        unfocusedContainerColor = surfaceColor,
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent,
                         focusedTextColor = Color.White,
@@ -103,25 +125,28 @@ fun HomeUi(
                 IconButton(
                     onClick = { /* TODO */ },
                     modifier = Modifier
-                        .size(56.dp)
-                        .background(Color(0xFF1C1F22), RoundedCornerShape(16.dp))
+                        .size(54.dp)
+                        .background(surfaceColor, RoundedCornerShape(16.dp))
                 ) {
                     Icon(Icons.Default.FilterList, contentDescription = "Filter", tint = Color.White)
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
-            // --- 3. Content Area ---
+            // --- Content Grid ---
             Box(modifier = Modifier.fillMaxSize()) {
                 if (movieState.loading) {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = Color.Magenta)
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center), 
+                        color = Color(0xFF8AB4F8)
+                    )
                 }
 
                 if (movieState.error.isNotEmpty()) {
                     Text(
                         text = movieState.error,
-                        color = Color.Red,
+                        color = Color(0xFFFF8585),
                         modifier = Modifier.align(Alignment.Center)
                     )
                 }
@@ -137,16 +162,19 @@ fun HomeUi(
                             Text(
                                 text = if (query.isEmpty()) "Popular Movies" else "Search Results",
                                 color = Color.White,
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(bottom = 8.dp)
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                modifier = Modifier.padding(bottom = 4.dp)
                             )
                         }
 
                         items(movies) { movie ->
                             MovieItem(
                                 movie = movie,
-                                onClick = { movie.id?.let { onMovieClick(it) } }
+                                onClick = { 
+                                    focusManager.clearFocus() // Click karte waqt bhi keyboard hide ho jaye
+                                    movie.id?.let { onMovieClick(it) } 
+                                }
                             )
                         }
                     }
@@ -174,20 +202,20 @@ fun MovieItem(movie: Result, onClick: () -> Unit) {
             contentScale = ContentScale.Crop
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(6.dp))
 
         Text(
             text = movie.title ?: "Unknown",
             color = Color.White,
             fontSize = 13.sp,
-            fontWeight = FontWeight.SemiBold,
+            fontWeight = FontWeight.Medium,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
 
         Text(
             text = movie.releaseDate?.take(4) ?: "N/A",
-            color = Color.Gray,
+            color = Color.LightGray,
             fontSize = 11.sp
         )
 
@@ -200,7 +228,7 @@ fun MovieItem(movie: Result, onClick: () -> Unit) {
             )
             Spacer(modifier = Modifier.width(4.dp))
             Text(
-                text = String.format("%.1f", movie.voteAverage ?: 0.0),
+                text = "%.1f".format(java.util.Locale.US, movie.voteAverage ?: 0.0),
                 color = Color.White,
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Bold

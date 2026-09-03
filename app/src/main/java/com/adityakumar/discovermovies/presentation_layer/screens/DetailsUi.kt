@@ -28,7 +28,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.adityakumar.discovermovies.presentation_layer.viewModel.DetailsViewModel
 import java.util.Locale
-import androidx.compose.ui.platform.LocalLocale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,10 +38,13 @@ fun DetailsUi(
     val state by viewModel.detailsState.collectAsStateWithLifecycle()
     val isInWatchlist by viewModel.isInWatchlist.collectAsStateWithLifecycle()
 
+    val backgroundColor = Color(0xFF121620)
+    val surfaceColor = Color(0xFF1E232E)
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Movie Details", color = Color.White) },
+                title = { Text("Movie Details", color = Color.White, fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
@@ -59,15 +61,15 @@ fun DetailsUi(
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
             )
         },
-        containerColor = Color(0xFF0F1113)
+        containerColor = backgroundColor
     ) { innerPadding ->
         Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
             if (state.loading) {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = Color.Magenta)
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = Color(0xFF8AB4F8))
             }
 
             if (state.error.isNotEmpty()) {
-                Text(state.error, color = Color.Red, modifier = Modifier.align(Alignment.Center))
+                Text(state.error, color = Color(0xFFFF8585), modifier = Modifier.align(Alignment.Center))
             }
 
             state.data?.let { movie ->
@@ -77,7 +79,7 @@ fun DetailsUi(
                         .verticalScroll(rememberScrollState())
                 ) {
                     // Backdrop & Poster
-                    Box(modifier = Modifier.fillMaxWidth().height(250.dp)) {
+                    Box(modifier = Modifier.fillMaxWidth().height(260.dp)) {
                         AsyncImage(
                             model = "https://image.tmdb.org/t/p/w780${movie.backdropPath}",
                             contentDescription = null,
@@ -91,8 +93,8 @@ fun DetailsUi(
                             modifier = Modifier
                                 .align(Alignment.BottomEnd)
                                 .padding(16.dp)
-                                .size(56.dp)
-                                .background(if (isInWatchlist) Color.White else Color(0xFF673AB7), CircleShape)
+                                .size(54.dp)
+                                .background(if (isInWatchlist) Color.White else Color(0xFF7C4DFF), CircleShape)
                         ) {
                             Icon(
                                 imageVector = if (isInWatchlist) Icons.Default.Bookmark else Icons.Default.BookmarkBorder, 
@@ -106,19 +108,19 @@ fun DetailsUi(
                         Text(
                             text = movie.title ?: "Unknown",
                             color = Color.White,
-                            fontSize = 28.sp,
+                            fontSize = 26.sp,
                             fontWeight = FontWeight.Bold
                         )
                         
                         Spacer(modifier = Modifier.height(8.dp))
                         
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(text = movie.releaseDate?.take(4) ?: "N/A", color = Color.Gray)
+                            Text(text = movie.releaseDate?.take(4) ?: "N/A", color = Color.LightGray, fontSize = 13.sp)
                             Text(text = "  •  ", color = Color.Gray)
-                            Text(text = "${movie.runtime ?: 0}m", color = Color.Gray)
+                            Text(text = "${movie.runtime ?: 0}m", color = Color.LightGray, fontSize = 13.sp)
                             Text(text = "  •  ", color = Color.Gray)
                             Icon(Icons.Default.Star, null, tint = Color(0xFFFFC107), modifier = Modifier.size(16.dp))
-                            Text(text = String.format(LocalLocale.current.platformLocale, " %.1f/10", movie.voteAverage ?: 0.0), color = Color.White)
+                            Text(text = " %.1f/10".format(Locale.US, movie.voteAverage ?: 0.0), color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
                         }
 
                         Spacer(modifier = Modifier.height(16.dp))
@@ -127,7 +129,7 @@ fun DetailsUi(
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             movie.genres?.forEach { genre ->
                                 Surface(
-                                    color = Color(0xFF1C1F22),
+                                    color = surfaceColor,
                                     shape = RoundedCornerShape(16.dp)
                                 ) {
                                     Text(
@@ -146,26 +148,28 @@ fun DetailsUi(
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
                             text = movie.overview ?: "No overview available.",
-                            color = Color.Gray,
-                            lineHeight = 22.sp
+                            color = Color.LightGray,
+                            lineHeight = 22.sp,
+                            fontSize = 14.sp
                         )
 
                         Spacer(modifier = Modifier.height(32.dp))
                         
                         Button(
                             onClick = { viewModel.toggleWatchlist() },
-                            modifier = Modifier.fillMaxWidth().height(56.dp),
+                            modifier = Modifier.fillMaxWidth().height(54.dp),
                             shape = RoundedCornerShape(16.dp),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = if (isInWatchlist) Color.Gray else Color(0xFF673AB7)
+                                containerColor = if (isInWatchlist) surfaceColor else Color(0xFF7C4DFF)
                             )
                         ) {
                             Icon(
                                 imageVector = if (isInWatchlist) Icons.Default.Bookmark else Icons.Default.BookmarkBorder, 
-                                contentDescription = null
+                                contentDescription = null,
+                                tint = Color.White
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text(if (isInWatchlist) "In Watchlist" else "Add to Watchlist")
+                            Text(if (isInWatchlist) "In Watchlist" else "Add to Watchlist", color = Color.White, fontWeight = FontWeight.Bold)
                         }
                     }
                 }

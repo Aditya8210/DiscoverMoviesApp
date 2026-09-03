@@ -26,6 +26,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.adityakumar.discovermovies.data_layer.local.entity.WatchListEntity
 import com.adityakumar.discovermovies.presentation_layer.viewModel.WatchlistViewModel
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,18 +36,20 @@ fun WatchlistUi(
 ) {
     val watchlist by viewModel.watchlist.collectAsStateWithLifecycle()
 
+    val backgroundColor = Color(0xFF121620)
+
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("My Watchlist", color = Color.White, fontWeight = FontWeight.Bold) },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF0F1113))
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = backgroundColor)
             )
         },
-        containerColor = Color(0xFF0F1113)
+        containerColor = backgroundColor
     ) { innerPadding ->
         if (watchlist.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("Your watchlist is empty", color = Color.Gray)
+                Text("Your watchlist is empty", color = Color.LightGray, fontSize = 16.sp)
             }
         } else {
             LazyColumn(
@@ -54,7 +57,7 @@ fun WatchlistUi(
                     .fillMaxSize()
                     .padding(innerPadding)
                     .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
                 contentPadding = PaddingValues(vertical = 16.dp)
             ) {
                 items(watchlist) { movie ->
@@ -75,12 +78,14 @@ fun WatchlistItem(
     onClick: () -> Unit,
     onRemove: () -> Unit
 ) {
+    val surfaceColor = Color(0xFF1E232E)
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(120.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(Color(0xFF1C1F22))
+            .height(110.dp)
+            .clip(RoundedCornerShape(14.dp))
+            .background(surfaceColor)
             .clickable { onClick() },
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -88,8 +93,9 @@ fun WatchlistItem(
             model = if (movie.posterPath != null) "https://image.tmdb.org/t/p/w200${movie.posterPath}" else null,
             contentDescription = movie.title,
             modifier = Modifier
-                .width(80.dp)
-                .fillMaxHeight(),
+                .width(75.dp)
+                .fillMaxHeight()
+                .clip(RoundedCornerShape(topStart = 14.dp, bottomStart = 14.dp)),
             contentScale = ContentScale.Crop
         )
 
@@ -101,29 +107,36 @@ fun WatchlistItem(
             Text(
                 text = movie.title,
                 color = Color.White,
-                fontSize = 16.sp,
+                fontSize = 15.sp,
                 fontWeight = FontWeight.Bold,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
             
+            Spacer(modifier = Modifier.height(4.dp))
+
             Text(
-                text = "${movie.releaseDate?.take(4) ?: "N/A"}  •  Rating: ${movie.voteAverage ?: 0.0}",
-                color = Color.Gray,
+                text = movie.releaseDate?.take(4) ?: "N/A",
+                color = Color.LightGray,
                 fontSize = 12.sp
             )
 
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(8.dp))
 
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.Star, null, tint = Color(0xFFFFC107), modifier = Modifier.size(14.dp))
+                Icon(Icons.Default.Star, null, tint = Color(0xFFFFC107), modifier = Modifier.size(13.dp))
                 Spacer(modifier = Modifier.width(4.dp))
-                Text(text = "${movie.voteAverage ?: 0.0}", color = Color.White, fontSize = 12.sp)
+                Text(
+                    text = "%.1f".format(Locale.US, movie.voteAverage ?: 0.0), 
+                    color = Color.White, 
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
 
         IconButton(onClick = onRemove) {
-            Icon(Icons.Default.Delete, contentDescription = "Remove", tint = Color.Gray)
+            Icon(Icons.Default.Delete, contentDescription = "Remove", tint = Color(0xFFFF8585))
         }
     }
 }
